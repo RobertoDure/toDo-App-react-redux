@@ -1,40 +1,51 @@
 const webpack = require('webpack')
-const ExtractTextPlugin = require('extract-text-webpack-plugin')
+const MiniCssExtractPlugin = require('mini-css-extract-plugin')
+const path = require('path')
 
 module.exports = {
+    mode: 'development',
     entry: './src/index.jsx',
     output: {
-        path: __dirname + '/public',
+        path: path.resolve(__dirname, 'public'),
         filename: './app.js'
     },
     devServer: {
         port: 8080,
         contentBase: './public',
+        historyApiFallback: true
     },
     resolve: {
-        extensions: ['', '.js', '.jsx'],
+        extensions: ['.js', '.jsx'],
         alias: {
-            modules: __dirname + '/node_modules'
+            modules: path.resolve(__dirname, 'node_modules')
         }
     },
     plugins: [ 
-        new ExtractTextPlugin('app.css')
+        new MiniCssExtractPlugin({
+            filename: 'app.css'
+        })
     ],
     module: {
-        loaders: [{
-            test: /.js[x]?$/,
-            loader: 'babel-loader',
+        rules: [{
+            test: /\.jsx?$/,
             exclude: /node_modules/,
-            query: {
-                presets: ['es2015', 'react'],
-                plugins: ['transform-object-rest-spread']
-            }
-        }, {
+            use: {
+                loader: 'babel-loader',
+                options: {
+                    presets: ['@babel/preset-env', '@babel/preset-react'],                    plugins: [
+                        '@babel/plugin-proposal-class-properties',
+                        '@babel/plugin-transform-runtime'
+                    ]
+                }
+            }        }, {
             test: /\.css$/,
-            loader: ExtractTextPlugin.extract('style-loader', 'css-loader')
+            use: [
+                MiniCssExtractPlugin.loader,
+                'css-loader'
+            ]
         }, {
-            test: /\.woff|.woff2|.ttf|.eot|.svg*.*$/,
-            loader: 'file'
+            test: /\.(woff|woff2|ttf|eot|svg)(\?.*)?$/,
+            use: 'file-loader'
         }]
     }
 }
